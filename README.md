@@ -115,4 +115,4 @@ void loop() {
 - Créer des animations
 
 
-<img src="pictures/2026-05-19-22-20-38-975.jpg" width="400">
+|<img src="pictures/1.jpg" width="400">|<img src="pictures/2.jpg" width="400">|
