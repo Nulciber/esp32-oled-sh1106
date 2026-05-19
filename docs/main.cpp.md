@@ -200,6 +200,7 @@ void loop() {} // Rien — tout est fait dans setup()
 
 ## Exemple pour allumer les 4 pixel des 4 coins de l'écran
 ```cpp
+
 void setup()
 {
     Serial.begin(115200);
@@ -215,4 +216,3 @@ void setup()
     display();
 }
 ```
-

@@ -33,22 +33,3 @@ Wire.begin(8, 9);   // SDA=8 SCL=9
 | 0xA4     | Afficher le contenu de la RAM                    | —            |
 | 0xA6     | Mode normal (1 = pixel allumé, 0 = pixel éteint) | —            |
 | 0xAF     | Allumer l'écran — toujours en dernier            | —            |
-
-## Sélectionner une page de l'écran (1 page = 128 pixels de large x 8 pixels de haut)
-```cpp
-send_command(0xB0);  // sélectionner la page 0
-```
-## Sélectionner la colonne de départ
-```cpp
-send_command(0x02);  // bits de droite de la colonne (on commence à 2 à cause du décalage du SH1106)
-send_command(0x10);  // bits de gauche de la colonne
-```
-Le SH1106 a une RAM de 132 colonnes alors que l'écran physique n'affiche que 128 colonnes. Les 4 colonnes supplémentaires sont cachées — 2 à gauche et 2 à droite.
-Donc la colonne 0 de l'écran physique correspond à la colonne 2 de la RAM du SH1106. C'est pour ça qu'on commence à 2 et pas à 0.
-
-Exemple pour envoyer des données à la page 0:
-```cpp
-send_command(0xB0);  // sélectionner la page 0
-send_command(0x02);  // colonne de départ : bits de droite (2 à cause du décalage SH1106)
-send_command(0x10);  // colonne de départ : bits de gauche
-```

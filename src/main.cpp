@@ -85,6 +85,26 @@ void set_pixel(uint8_t x, uint8_t y, uint8_t on)
         framebuffer[page][x] &= ~(1 << bit);
 }
 
+void draw_hline(uint8_t x0, uint8_t x1, uint8_t y)
+{
+    for (uint8_t x = x0; x <= x1; x++)
+        set_pixel(x, y, 1);
+}
+
+void draw_vline(uint8_t x, uint8_t y0, uint8_t y1)
+{
+    for (uint8_t y = y0; y <= y1; y++)
+        set_pixel(x, y, 1);
+}
+
+void draw_rectangle(uint8_t x0, uint8_t x1, uint8_t y0, uint8_t y1)
+{
+    draw_hline(x0, x1, y0);
+    draw_vline(x1, y0, y1);
+    draw_hline(x0, x1, y1);
+    draw_vline(x0, y0, y1);
+}
+
 void setup()
 {
     Serial.begin(115200);
@@ -93,10 +113,9 @@ void setup()
     sh1106_init();
     clear();
     display();
-    set_pixel(0, 0, 1);
-    set_pixel(127, 0, 1);
-    set_pixel(0, 63, 1);
-    set_pixel(127, 63, 1);
+
+    draw_rectangle(0, WIDTH - 1, 0, HEIGHT - 1);
+
     display();
 }
 
