@@ -113,3 +113,6 @@ void loop() {
 - Afficher des images bitmap
 - Afficher du texte (police de caractères)
 - Créer des animations
+
+
+<img src="pictures/2026-05-19-22-20-38-975.jpg" width="400">
