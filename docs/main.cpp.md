@@ -112,21 +112,22 @@ void clear() {
 ## Fonction display()
 Envoi du framebuffer à l'écran via I2C, page par page (rappel, il y a 8 pages de 128 octets, numérotées de haut en bas de 0 à 7)
 Séquence pour chaque page:
-On dit au SH1106 quelle page on va remplir
-On envoie les 64 premiers octets de cette page
-On envoie les 64 octets suivants
+1) On dit au SH1106 quelle page on va remplir
+2) On envoie les 64 premiers octets de cette page
+3) On envoie les 64 octets suivants
 Pourquoi deux transmissions de 64 octets?
 Parce que le buffer I2C de l'ESP32-S3 est limité à 128 octets par transmission. Or on doit envoyer 129 octets en une fois (1 octet de contrôle 0x40 + 128 octets de données) — c'est 1 octet de trop.
 On coupe donc en deux transmissions de 65 octets chacune (1 octet 0x40 + 64 octets de données).
 ```cpp
 void display() {
     for (uint8_t page = 0; page < PAGES; page++) {
-        // On dit au SH1106 quelle page on va remplir
+        // 1) On dit au SH1106 quelle page on va remplir
         Wire.beginTransmission(I2C_ADDR); // On indique à l'écran qu'on va transmettre une information
         Wire.write(0x00); // Ce qui suit est une commande (0x00= commande, 0x40=données)
         Wire.write(0xB0 + page); // sélectionner la page (0xB0=page 0, 0xB1=page 1, etc.). 0xB0 est défini dans le datasheet.
         Wire.write(0x00); // Partie basse de l'adresse de colonne. Préfixe 0x0 + valeur 0000 = colonne 0
         Wire.write(0x10); // Partie haute de l'adresse de colonne. Préfixe 0x1 + valeur 0000 = colonne 0
+        // Ces deux dernières instructions disent qu'on commene à écrire à partir de la première colonne de l'écran (colonne 0)
 ```
         Le préfixe c'est ce que le SH1106 impose dans son datasheet pour distinguer les deux commandes :
         0x0_ = commande "partie basse de l'adresse de colonne" — le _ est la valeur (4 bits)
@@ -142,13 +143,13 @@ void display() {
 
         Wire.endTransmission();
 
-        // On envoie les 64 premiers octets de cette page
+        // 2) On envoie les 64 premiers octets de cette page
         Wire.beginTransmission(I2C_ADDR); // On indique à l'écran qu'on va lui transmettre de l'information
         Wire.write(0x40);                 // 0x40=On envoie des données
         Wire.write(framebuffer[page], 64);// On envoie les 64 premiers octets de la page 
         Wire.endTransmission();           // La transmission est terminée
 
-        // On envoie les 64 octets suivants
+        // 3) On envoie les 64 octets suivants
         Wire.beginTransmission(I2C_ADDR); // On indique à l'écran qu'on va lui transmettre de l'information
         Wire.write(0x40);                 // 0x40=On envoie des données
         Wire.write(framebuffer[page] + 64, 64);// On envoie les 64 octets de la page 
@@ -195,5 +196,23 @@ void setup() {
 ## Fonction loop()
 ```cpp
 void loop() {} // Rien — tout est fait dans setup()
+```
+
+## Exemple pour allumer les 4 pixel des 4 coins de l'écran
+```cpp
+void setup()
+{
+    Serial.begin(115200);
+    Wire.begin(SDA_PIN, SCL_PIN);
+    Wire.setClock(400000);
+    sh1106_init();
+    clear();
+    display();
+    set_pixel(0, 0, 1);
+    set_pixel(127, 0, 1);
+    set_pixel(0, 63, 1);
+    set_pixel(127, 63, 1);
+    display();
+}
 ```
 
