@@ -4,6 +4,9 @@ C'est un bus de communication qui permet à l'ESP32 de parler à l'écran avec s
 SDA (GPIO 8) — les données
 SCL (GPIO 9) — l'horloge
 
+En I2C, le port SDA permet la circultion sur les deux sens (MOSI et MISO)
+Il n'y a pas de CS car le composant est choisi par son adresse, dans notre cas 0x3D. Donc on peut dialoguer avec 127 composants avec un seul fil. Ce protocole est cependant plus lent que SPI.
+
 ## Envoi des commandes d'initialisation
 ```cpp
 void setup()

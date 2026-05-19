@@ -1,7 +1,7 @@
-# ESP32 × OLED SSD1306 — Programmation bas niveau
+# ESP32-S3 × OLED SH1106 — Programmation bas niveau
 
-Projet d'apprentissage : piloter un écran OLED Adafruit #938 (SSD1306, 128×64px)
-depuis un ESP32 **sans aucune bibliothèque externe**, en I2C.
+Projet d'apprentissage : piloter un écran OLED Adafruit #938 (SH1106, 128×64px)
+depuis un ESP32-S3 **sans bibliothèques externes**, en I2C, tout dans `main.cpp`.
 
 ---
 
@@ -9,8 +9,8 @@ depuis un ESP32 **sans aucune bibliothèque externe**, en I2C.
 
 | Composant | Référence |
 |-----------|-----------|
-| Microcontrôleur | ESP32 (n'importe quelle carte) |
-| Écran OLED | Adafruit #938 (SSD1306, 1.3", STEMMA QT) |
+| Microcontrôleur | ESP32-S3-WROOM-1 (DevKitC-1) |
+| Écran OLED | Adafruit #938 (SH1106, 1.3", STEMMA QT) |
 | Câble | 4 fils Dupont femelle-femelle |
 
 ---
@@ -18,141 +18,98 @@ depuis un ESP32 **sans aucune bibliothèque externe**, en I2C.
 ## Câblage
 
 ```
-ESP32          Adafruit #938
-─────          ─────────────
-3.3V    →      Vin  (rouge)
-GND     →      GND  (noir)
-GPIO 21 →      SDA  (bleu)
-GPIO 22 →      SCL  (jaune)
+ESP32-S3       Adafruit #938
+────────       ─────────────
+3.3V    →      VIN
+GND     →      GND
+GPIO 8  →      DATA (SDA)
+GPIO 9  →      CLK  (SCL)
 ```
 
-> **Note STEMMA QT** : si tu utilises le câble STEMMA QT fourni,
-> les couleurs correspondent directement. Sinon, utilise des fils Dupont
-> sur les trous de soudure classiques de la carte.
+> **Note** : l'adresse I2C de l'écran est **0x3D** (découverte par scan I2C).
+> Le contrôleur est un **SH1106** (et non SSD1306 comme indiqué par Adafruit).
 
 ---
 
 ## Structure du projet
 
 ```
-esp32-oled-ssd1306/
-├── platformio.ini      ← Configuration PlatformIO
+esp32-oled-sh1106/
+├── platformio.ini  ← Configuration PlatformIO pour ESP32-S3
 └── src/
-    ├── main.cpp        ← Exercices progressifs (UN seul actif à la fois)
-    ├── i2c.h / .cpp    ← Couche bas niveau I2C
-    └── ssd1306.h / .cpp← Registres et framebuffer SSD1306
+    └── main.cpp    ← Tout le code : init, framebuffer, dessin
 ```
-
-### Rôle de chaque fichier
-
-**`i2c.cpp`** — Gère le bus I2C hardware de l'ESP32.
-Seule fonction utile : `i2c_write(adresse, données, longueur)`.
-Tu peux l'ignorer au départ et faire confiance à son interface.
-
-**`ssd1306.h`** — Contient TOUS les registres documentés du SSD1306.
-Lis ce fichier comme un dictionnaire : chaque `#define` correspond
-à une commande réelle du contrôleur, avec son explication.
-
-**`ssd1306.cpp`** — Implémente les fonctions de dessin.
-Le cœur du projet : initialisation, framebuffer, pixels, texte.
-
-**`main.cpp`** — Tes exercices. Décommente-les un par un.
 
 ---
 
-## Concepts clés à comprendre
+## Fonctions disponibles
 
-### 1. Le bus I2C
+| Fonction | Description |
+|----------|-------------|
+| `sh1106_init()` | Initialise le contrôleur SH1106 |
+| `clear()` | Efface le framebuffer (écran noir) |
+| `display()` | Envoie le framebuffer à l'écran via I2C |
+| `set_pixel(x, y, on)` | Allume ou éteint un pixel |
+| `draw_hline(x0, x1, y)` | Dessine une ligne horizontale |
+| `draw_vline(x, y0, y1)` | Dessine une ligne verticale |
+| `draw_rectangle(x0, x1, y0, y1)` | Dessine un rectangle vide |
 
+---
+
+## Concepts clés
+
+### Le bus I2C
 Deux fils partagés entre plusieurs composants :
-- **SDA** (Serial Data) : les données
-- **SCL** (Serial Clock) : l'horloge
+- **DATA** (SDA) : les données
+- **CLK** (SCL) : l'horloge
 
-Chaque composant a une **adresse unique** (7 bits).
-Le SSD1306 répond à l'adresse **0x3C** (ou 0x3D selon la config).
+### L'octet de contrôle
+- `0x00` → ce qui suit est une **commande**
+- `0x40` → ce qui suit sont des **données** (pixels)
 
-Une transaction I2C :
+### La RAM du SH1106
+L'écran est organisé en **8 pages** de 8 pixels de haut × 128 pixels de large.
+Le SH1106 a une RAM de 132 colonnes — les pixels visibles commencent à la colonne 0.
+
+### Le framebuffer
+Copie en RAM de l'ESP32 de ce qui doit être affiché (1024 octets).
+Flux de travail :
 ```
-[START] [0x3C + W] [ACK] [octet1] [ACK] [octet2] [ACK] ... [STOP]
-```
-
-### 2. L'octet de contrôle
-
-Après l'adresse, le SSD1306 attend **toujours** un octet de contrôle :
-- `0x00` → ce qui suit est une **commande** (configure le contrôleur)
-- `0x40` → ce qui suit sont des **données** (pixels à afficher)
-
-### 3. La RAM interne du SSD1306
-
-L'écran est organisé en **8 pages** de 8 pixels de haut :
-
-```
-Page 0 : lignes  0 à  7
-Page 1 : lignes  8 à 15
-Page 2 : lignes 16 à 23
-...
-Page 7 : lignes 56 à 63
-```
-
-Chaque page contient **128 octets** (un par colonne).
-Chaque octet contrôle **8 pixels verticaux** (1 bit = 1 pixel).
-
-```
-Octet de la page 0, colonne 5 :
-  bit 0 → pixel (5, 0)  ← le plus en haut
-  bit 1 → pixel (5, 1)
-  ...
-  bit 7 → pixel (5, 7)  ← le plus en bas
-```
-
-### 4. Le framebuffer
-
-Comme on ne peut pas **lire** la RAM du SSD1306 en I2C,
-on garde une copie en RAM de l'ESP32 :
-
-```
-uint8_t framebuffer[8][128];  // 1024 octets
-```
-
-Flux de travail pour dessiner :
-```
-1. ssd1306_clear()         ← effacer le framebuffer (RAM ESP32)
-2. ssd1306_set_pixel(x,y)  ← modifier des bits dans le framebuffer
-3. ssd1306_display()       ← envoyer les 1024 octets à l'écran via I2C
+1. clear()         ← effacer le framebuffer
+2. set_pixel(x, y) ← dessiner dans le framebuffer
+3. display()       ← envoyer à l'écran
 ```
 
 ---
 
-## Exercices
+## Scanner l'adresse I2C
 
-| # | Fichier | Objectif |
-|---|---------|----------|
-| 1 | `#define EXERCICE_1` | Vérifier le câblage, allumer l'écran |
-| 2 | `#define EXERCICE_2` | Afficher du texte, comprendre le framebuffer |
-| 3 | `#define EXERCICE_3` | Manipuler des pixels individuels |
-| 4 | `#define EXERCICE_4` | Tracer des lignes et rectangles |
-| 5 | `#define EXERCICE_5` | Créer une animation |
+```cpp
+#include <Arduino.h>
+#include <Wire.h>
 
-**Pour changer d'exercice :** dans `main.cpp`, commente le `#define` actuel
-et décommente le suivant, puis recompile (`Ctrl+Alt+U` dans PlatformIO).
+void setup() {
+    Serial.begin(115200);
+    Wire.begin(8, 9);
+}
 
----
-
-## Débogage
-
-Si l'écran ne s'allume pas à l'exercice 1 :
-
-1. **Vérifier le câblage** : SDA sur GPIO 21, SCL sur GPIO 22, 3.3V sur Vin
-2. **Ouvrir le moniteur série** (`Ctrl+Alt+S`) — tu dois voir les messages de setup
-3. **Scanner l'I2C** : si le SSD1306 répond, tu dois trouver l'adresse 0x3C
-4. **Vérifier la tension** : le SSD1306 attend 3.3V, pas 5V sur Vin
+void loop() {
+    for (uint8_t addr = 1; addr < 127; addr++) {
+        Wire.beginTransmission(addr);
+        uint8_t err = Wire.endTransmission();
+        if (err == 0) {
+            Serial.print("Appareil trouve a 0x");
+            Serial.println(addr, HEX);
+        }
+    }
+    delay(3000);
+}
+```
 
 ---
 
 ## Pour aller plus loin
-
-Une fois les 5 exercices maîtrisés, tu peux explorer :
 - Dessiner des cercles (algorithme de Bresenham)
-- Afficher des images bitmap (convertir une image en tableau de bits)
-- Utiliser le défilement matériel du SSD1306 (commandes 0x26/0x27)
-- Mesurer la vitesse d'affichage et optimiser les transferts I2C
+- Afficher des images bitmap
+- Afficher du texte (police de caractères)
+- Créer des animations
