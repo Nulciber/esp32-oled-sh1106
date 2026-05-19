@@ -11,7 +11,7 @@ depuis un ESP32-S3 **sans bibliothèques externes**, en I2C, tout dans `main.cpp
 |-----------|-----------|
 | Microcontrôleur | ESP32-S3-WROOM-1 (DevKitC-1) |
 | Écran OLED | Adafruit #938 (SH1106, 1.3", STEMMA QT) |
-| Câble | 4 fils Dupont femelle-femelle |
+
 
 ---
 
