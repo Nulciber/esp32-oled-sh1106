@@ -1,46 +1,24 @@
 ## Bibliothèques
-
 ```cpp
 #include <Arduino.h> // On appelle la bibliothèque Arduino
 #include <Wire.h>    // On appelle la bibliothèque qui inclut les programmes de communication avec le hardware I2C
 ```
 ## Constante I2C_ADDR
+```cpp
+#define I2C_ADDR   0x3D // Adresse I2C du SH1106. I2C a besoin de cette adresse car le protocole peut travailler avec 127 appareils différents, repérés par leur adresse. Voir le code pour trouver l'adresse dans help.md
 
 ```cpp
-#define I2C_ADDR   0x3D // Adresse I2C du SH1106
+#include <Arduino.h> // Bibliothèque des fonctions Arduino
+#include <Wire.h>    // Bibliothpque des fonctions I2C
 ```
-## Code pour trouver l'adresse I2C
-```cpp
-#include <Arduino.h>
-#include <Wire.h>
-
-void setup() {
-    Serial.begin(115200);
-    Wire.begin(8, 9);
-}
-
-void loop() {
-    for (uint8_t addr = 1; addr < 127; addr++) {
-        Wire.beginTransmission(addr);
-        uint8_t err = Wire.endTransmission();
-        if (err == 0) {
-            Serial.print("Appareil trouve a 0x");
-            Serial.println(addr, HEX);
-        }
-    }
-    delay(3000);
-}
-```
-
-
 ## Autres constantes
-
+```cpp
 #define SDA_PIN    8    // Port SDA
 #define SCL_PIN    9    // Port SCL
 #define WIDTH      128  // Largeur de l'écran en pixels 
 #define HEIGHT     64   // Hauteur de l'écran en pixels
 #define PAGES      8    // Nombre de pages. Chaque page = une bande de 8 lignes sur toute la largeur de l'écran
-
+```
 Rappel: en I2C, le port SDA permet la circultion sur les deux sens (MOSI et MISO)
 Il n'y a pas de CS car le composant est choisi par son adresse, dans notre cas 0x3D. Donc on peut dialoguer avec 127 composants avec un seul fil. Ce protocole est cependant plus lent que SPI.
 
@@ -55,36 +33,34 @@ uint8_t framebuffer[PAGES][WIDTH];
 ```
 ## fonction sendCommand()
 Reçoit en paramètre une variable de type uint8_t (octet) et lui donne le nom de cmd pour l'utilisation dans son code interne
-
 ```cpp
 void send_command(uint8_t cmd) {
     Wire.beginTransmission(I2C_ADDR); // On indique à l'écran qu'on va lui transmettre de l'information
-    Wire.write(0x00);    // 0x00 = Ce qui suit est une commande
-    Wire.write(cmd);     // La commande elle-même, qui a été passée en paramètre
-    Wire.endTransmission(); // La transmission est terminée
+    Wire.write(0x00);                 // 0x00 = Ce qui suit est une commande
+    Wire.write(cmd);                  // La commande elle-même, qui a été passée en paramètre
+    Wire.endTransmission();           // La transmission est terminée
 }
 ```
 ## fonction sh1106_init()
 Initialisation de l'écran. Le détail des valeurs est donné dans le fichier help.md
 ```cpp
 void sh1106_init() {
-    send_command(0xAE); //Eteindre l'écran
+    send_command(0xAE);                     //Eteindre l'écran
     send_command(0xD5); send_command(0x80); // Configuration de l'horloge interne; 0xD5=avec la valeur du datasheet
     send_command(0xA8); send_command(0x3F); // Configuration du multiplexage;0xA8=64 lignes (63 en comptant depuis 0)
     send_command(0xD3); send_command(0x00); // Configuration du décalage vertical;0xD3=pas de décalage
-    send_command(0x40); // Ligne de départ. 0x40 porte en elle-même que la ligne de départ vaut 0
+    send_command(0x40);                     // Ligne de départ. 0x40 porte en elle-même que la ligne de départ vaut 0
     send_command(0x8D); send_command(0x14); // Configure la charge pump ON; 0x14=ON. Sans cette commande l'écran ne s'allume pas!
-    send_command(0xA1); // Orientation normale: on scanne de gauche à droite
-    send_command(0xC8); // Orientation normale: on scanne de haut en bas
+    send_command(0xA1);                     // Orientation normale: on scanne de gauche à droite
+    send_command(0xC8);                     // Orientation normale: on scanne de haut en bas
     send_command(0xDA); send_command(0x12); // Configuration des broches COM;0xDA=Configuration pour un écran 128x64 
     send_command(0x81); send_command(0xFF); // Configurer le contraste; 0xFF=contraste maximal
     send_command(0xD9); send_command(0x22); // Configuration de la pré-charge;0x22=valeur recommandée par le datasheet
     send_command(0xDB); send_command(0x35); // Configuration du niveau VCOMH;0xDB=valeur recommandée par le datasheet
-    send_command(0xA4); // Afficher le contenu de la RAM
-    send_command(0xA6); // Mode normal (1 = pixel allumé, 0 = pixel éteint)
-    send_command(0xAF); //Allumer l'écran — toujours en dernier
-
-}
+    send_command(0xA4);                     // Afficher le contenu de la RAM
+    send_command(0xA6);                     // Mode normal (1 = pixel allumé, 0 = pixel éteint)
+    send_command(0xAF);                     //Allumer l'écran — toujours en dernier
+ }
 ```
 ## Fonction clear()
 Efface le framebuffer en mettant tous les pixels à 0 (écran noir).
@@ -95,7 +71,11 @@ Efface le framebuffer en mettant tous les pixels à 0 (écran noir).
 3. **`sizeof(framebuffer)`** — le nombre d'octets à remplir (1024 octets dans notre cas)
 
 En une seule ligne elle met tous les 1024 octets du framebuffer à zéro — ce qui correspond à un écran entièrement noir.
-
+```cpp
+void clear() {
+    memset(framebuffer, 0x00, sizeof(framebuffer)); // Remplit les 1024 octets du framebuffer avec 0x00
+}
+```
 C'est l'équivalent de faire :
 ```cpp
 for (int i = 0; i < 1024; i++) {
@@ -104,13 +84,9 @@ for (int i = 0; i < 1024; i++) {
 ```
 mais en beaucoup plus rapide.
 
-```cpp
-void clear() {
-    memset(framebuffer, 0x00, sizeof(framebuffer)); // Remplit les 1024 octets du framebuffer avec 0x00
-}
-```
 ## Fonction display()
 Envoi du framebuffer à l'écran via I2C, page par page (rappel, il y a 8 pages de 128 octets, numérotées de haut en bas de 0 à 7)
+Par défaut, le SH1106 attend une page de 128 colonnes, envoyée en deux fois 64 colonnes. Dans notre exemple, on garde ce défaut. On pourrait cependant coder afin de ne mettre à jour que des colonnes spécifiques.
 Séquence pour chaque page:
 1) On dit au SH1106 quelle page on va remplir
 2) On envoie les 64 premiers octets de cette page
@@ -127,7 +103,7 @@ void display() {
         Wire.write(0xB0 + page); // sélectionner la page (0xB0=page 0, 0xB1=page 1, etc.). 0xB0 est défini dans le datasheet.
         Wire.write(0x00); // Partie basse de l'adresse de colonne. Préfixe 0x0 + valeur 0000 = colonne 0
         Wire.write(0x10); // Partie haute de l'adresse de colonne. Préfixe 0x1 + valeur 0000 = colonne 0
-        // Ces deux dernières instructions disent qu'on commene à écrire à partir de la première colonne de l'écran (colonne 0)
+        // Ces deux dernières instructions disent qu'on commence à écrire à partir de la première colonne de l'écran (colonne 0)
 ```
         Le préfixe c'est ce que le SH1106 impose dans son datasheet pour distinguer les deux commandes :
         0x0_ = commande "partie basse de l'adresse de colonne" — le _ est la valeur (4 bits)
@@ -198,21 +174,3 @@ void setup() {
 void loop() {} // Rien — tout est fait dans setup()
 ```
 
-## Exemple pour allumer les 4 pixel des 4 coins de l'écran
-```cpp
-
-void setup()
-{
-    Serial.begin(115200);
-    Wire.begin(SDA_PIN, SCL_PIN);
-    Wire.setClock(400000);
-    sh1106_init();
-    clear();
-    display();
-    set_pixel(0, 0, 1);
-    set_pixel(127, 0, 1);
-    set_pixel(0, 63, 1);
-    set_pixel(127, 63, 1);
-    display();
-}
-```

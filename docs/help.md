@@ -7,6 +7,8 @@ SCL (GPIO 9) — l'horloge
 En I2C, le port SDA permet la circultion sur les deux sens (MOSI et MISO)
 Il n'y a pas de CS car le composant est choisi par son adresse, dans notre cas 0x3D. Donc on peut dialoguer avec 127 composants avec un seul fil. Ce protocole est cependant plus lent que SPI.
 
+L'écran du SH1106 est composé de 128 pixels (0-127) de long sur 64 pixels (0-63) de large. Il est décomposé en 8 pages de 8 pixels de haut et 128 pixles de large, numérotée de haut en bas de 0 à 7.
+
 ## Envoi des commandes d'initialisation
 ```cpp
 void setup()
