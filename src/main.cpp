@@ -105,6 +105,24 @@ void draw_rectangle(uint8_t x0, uint8_t x1, uint8_t y0, uint8_t y1)
     draw_vline(x0, y0, y1);
 }
 
+void draw_line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1) {
+    int dx = x1 - x0;
+    int dy = y1 - y0;
+    int sx = (dx > 0) ? 1 : -1;  // direction en X
+    int sy = (dy > 0) ? 1 : -1;  // direction en Y
+    dx = abs(dx);
+    dy = abs(dy);
+    int err = dx - dy;
+
+    while (1) {
+        set_pixel(x0, y0, 1);
+        if (x0 == x1 && y0 == y1) break;
+        int e2 = 2 * err;
+        if (e2 > -dy) { err -= dy; x0 += sx; }
+        if (e2 <  dx) { err += dx; y0 += sy; }
+    }
+}
+
 void setup()
 {
     Serial.begin(115200);
@@ -114,7 +132,7 @@ void setup()
     clear();
     display();
 
-    draw_rectangle(0, WIDTH - 1, 0, HEIGHT - 1);
+    draw_line(0, 63, 127, 0);
 
     display();
 }

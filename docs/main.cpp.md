@@ -154,6 +154,31 @@ void set_pixel(uint8_t x, uint8_t y, uint8_t on) {
         // 0b00010000 & 0b11101111 = 0b00000000
         // Donc on éteint le pixel sans modifier les autres bits
 }
+
+```
+
+## Dessiner une ligne partant d'un point et allant à un autre (Bredenham)
+```cpp
+void draw_line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1) {
+    int dx = x1 - x0; // Longueur (largeur) de la ligne
+    int dy = y1 - y0; // Hauteur de la ligne (du graph)
+    int sx = (dx > 0) ? 1 : -1;  // si dx est positif, sx=1 -> on va vers la droite, sinon on va vers la gauche 
+    int sy = (dy > 0) ? 1 : -1;  // si dy est positif, sy=1 -> on va vers le bas, sinon on va vers le haut
+    dx = abs(dx); // On a la direction dans sx et sy, on a besoin que de la valeur de cette direction
+    dy = abs(dy); // On a la direction dans sx et sy, on a besoin que de la valeur de cette direction
+    int err = dx - dy; // Calcule la valeur de l'erreur: 
+                       // Si dx > dy → la ligne est plus horizontale → on avance surtout en X
+                       // Si dy > dx → la ligne est plus verticale → on avance surtout en Y
+
+    while (1) {                               // Boucle infinie
+        set_pixel(x0, y0, 1);                 // On allume le pixel de départ (x0,y0)
+        if (x0 == x1 && y0 == y1) break;      // Si on arrive au bout, on quitte la boucle
+        int e2 = 2 * err;                     // On multiplie par 2 pour éviter les décimaux (on veut des nombres pairs quand on divise par 2)
+        if (e2 > -dy) { err -= dy; x0 += sx; } // si l'erreur est assez grande, on avance en x d'un pas (sx). Et on ajuste l'erreur en soustrayant dy err -= dy signifie err = err - dy
+        if (e2 <  dx) { err += dx; y0 += sy; } // si l'erreur est assez petite, on avance en y d'un pas et on ajuste en ajoutant dx à err
+    }
+}
+```
 ```
 ## Fonction setup()
 ```cpp

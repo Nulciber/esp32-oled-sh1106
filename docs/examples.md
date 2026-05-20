@@ -113,3 +113,24 @@ void setup()
     display();
 }
 ```
+
+## Dessiner une ligne partant d'un point et allant à un autre (Bredenham)
+```cpp
+void draw_line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1) {
+    int dx = x1 - x0;
+    int dy = y1 - y0;
+    int sx = (dx > 0) ? 1 : -1;  // direction en X
+    int sy = (dy > 0) ? 1 : -1;  // direction en Y
+    dx = abs(dx);
+    dy = abs(dy);
+    int err = dx - dy;
+
+    while (1) {
+        set_pixel(x0, y0, 1);
+        if (x0 == x1 && y0 == y1) break;
+        int e2 = 2 * err;
+        if (e2 > -dy) { err -= dy; x0 += sx; }
+        if (e2 <  dx) { err += dx; y0 += sy; }
+    }
+}
+```
