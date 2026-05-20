@@ -179,7 +179,59 @@ void draw_line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1) {
     }
 }
 ```
+## Fonction pour dessiner un cercle
+```cpp
+void draw_circle(uint8_t cx, uint8_t cy, uint8_t r) {
+    int x = 0;     // On fait débuter le cercle...
+    int y = r;     //...par le point le plus haut
+    int err = 3 - 2 * r; // Valeur initiale de l'erreur entre le cercle mathématique exact et le pixle choisi
+
+    while (x <= y) {
+        set_pixel(cx + x, cy + y, 1); // octant 1
+        set_pixel(cx - x, cy + y, 1); // octant 2 (symétrie verticale)
+        set_pixel(cx + x, cy - y, 1); // octant 3 (symétrie horizontale)
+        set_pixel(cx - x, cy - y, 1); // octant 4 (symétrie centrale)
+        set_pixel(cx + y, cy + x, 1); // octant 5 (symétrie diagonale)
+        set_pixel(cx - y, cy + x, 1); // octant 6
+        set_pixel(cx + y, cy - x, 1); // octant 7
+        set_pixel(cx - y, cy - x, 1); // octant 8
+
+        if (err < 0) {
+            err += 4 * x + 6;
+        } else {
+            err += 4 * (x - y) + 10;
+            y--;
+        }
+        x++;
+    }
+}
 ```
+
+## Fonction
+```cpp
+// Cette fonction reçoit les coordonnées de l'écran pour écrire le glyphe 
+// ainsi que le glyphe (car) à écrire qui est de type Caractere, type défini dans caractere.h
+// Le type Caractere a un octet pour le nombre ASCII du glyphe puis un tableau de 8 octets
+// pour chacune des 8 lignes qui forment le dessin du glyphe.
+// Exemple :  {0x41, {0x18, 0x24, 0x42, 0x42, 0x7E, 0x42, 0x42, 0x00}}, // A
+// La fonction draw_glyphe est appelée par draw_char, elle n'est pas utilisée pour elle-même
+// dans main.cpp
+void draw_glyph(uint8_t x, uint8_t y, Caractere car)
+{
+    for (int ligne = 0; ligne < 8; ligne++) // Première boucle, on lit chaque ligne du glyphe
+    {
+        uint8_t octet = car.bitmap[ligne];
+        for (int col = 0; col < 8; col++)   // Seconde boucle, on lit chaque colonne du glyphe 
+        {
+            if (octet & (0x80 >> col))
+            {
+                set_pixel(x + col, y + ligne, 1);
+            }
+        }
+    }
+}
+```
+
 ## Fonction setup()
 ```cpp
 void setup() {
