@@ -3,6 +3,7 @@
 #include "caractere.h"
 #include "police_standard.h"
 #include "police_accents.h"
+#include "bateauIvre.h"
 
 #define I2C_ADDR 0x3D
 #define SDA_PIN 8
@@ -76,9 +77,9 @@ void display()
     }
 }
 
-void set_pixel(uint8_t x, uint8_t y, uint8_t on)
+void set_pixel(int x, int y, uint8_t on)
 {
-    if (x >= WIDTH || y >= HEIGHT)
+    if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT)
         return;
     uint8_t page = y / 8;
     uint8_t bit = y % 8;
@@ -167,7 +168,7 @@ void draw_circle(uint8_t cx, uint8_t cy, uint8_t r)
     }
 }
 
-void draw_glyph(uint8_t x, uint8_t y, Caractere car)
+void draw_glyph(int x, int y, Caractere car)
 {
     for (int ligne = 0; ligne < 8; ligne++)
     {
@@ -182,7 +183,7 @@ void draw_glyph(uint8_t x, uint8_t y, Caractere car)
     }
 }
 
-void draw_char(uint8_t x, uint8_t y, uint8_t c)
+void draw_char(int x, int y, uint8_t c)
 {
     for (int i = 0; i < sizeof(police_standard) / sizeof(Caractere); i++)
     {
@@ -205,7 +206,7 @@ void draw_char(uint8_t x, uint8_t y, uint8_t c)
 // Affiche une chaîne de caractères à la position (x, y)
 // str : pointeur sur le premier caractère de la chaîne (se termine par \0)
 // Chaque caractère fait 8 pixels de large
-void draw_string(uint8_t x, uint8_t y, const char *str)
+void draw_string(int x, int y, const char *str)
 {
     while (*str)
     {                          // tant qu'on n'est pas à la fin de la chaîne (\0)
@@ -222,11 +223,21 @@ void setup()
     sh1106_init();
     clear();
     display();
-
-    draw_glyph(10, 10,   {0x37, {0x7E, 0x02, 0x04, 0x08, 0x10, 0x20, 0x20, 0x00}});
-
-    display();
-    
 }
 
-void loop() {}
+
+
+void loop()
+{
+    int longueur = strlen(phrase) * 8;
+    static int i = 0;
+    
+    clear();
+    draw_string(WIDTH - i, 28, phrase);
+    if (i > longueur - WIDTH)
+        draw_string(WIDTH - i + longueur, 28, phrase);
+    display();
+    delay(1);
+    i++;
+    if (i >= longueur) i = 0;
+}

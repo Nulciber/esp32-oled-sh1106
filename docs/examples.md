@@ -89,7 +89,7 @@ void setup()
     display();
 }
 ```
-## dessiner un rectangle avec la fontion draw_rectangle
+## Dessiner un rectangle avec la fontion draw_rectangle
 ```cpp
 void draw_rectangle(uint8_t x0, uint8_t x1, uint8_t y0, uint8_t y1)
 {
@@ -113,6 +113,33 @@ void setup()
     display();
 }
 ```
+## Dessiner un cercle
+```cpp
+void draw_circle(uint8_t cx, uint8_t cy, uint8_t r) {
+    int x = 0;     // On fait débuter le cercle...
+    int y = r;     //...par le point le plus haut
+    int err = 3 - 2 * r; // Valeur initiale de l'erreur entre le cercle mathématique exact et le pixle choisi
+
+    while (x <= y) {
+        set_pixel(cx + x, cy + y, 1); // octant 1
+        set_pixel(cx - x, cy + y, 1); // octant 2 (symétrie verticale)
+        set_pixel(cx + x, cy - y, 1); // octant 3 (symétrie horizontale)
+        set_pixel(cx - x, cy - y, 1); // octant 4 (symétrie centrale)
+        set_pixel(cx + y, cy + x, 1); // octant 5 (symétrie diagonale)
+        set_pixel(cx - y, cy + x, 1); // octant 6
+        set_pixel(cx + y, cy - x, 1); // octant 7
+        set_pixel(cx - y, cy - x, 1); // octant 8
+
+        if (err < 0) {
+            err += 4 * x + 6;
+        } else {
+            err += 4 * (x - y) + 10;
+            y--;
+        }
+        x++;
+    }
+}
+```
 
 ## Dessiner une ligne partant d'un point et allant à un autre (Bredenham)
 ```cpp
@@ -132,5 +159,95 @@ void draw_line(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1) {
         if (e2 > -dy) { err -= dy; x0 += sx; }
         if (e2 <  dx) { err += dx; y0 += sy; }
     }
+}
+```
+
+## Écrire un caractère
+```cpp
+void draw_char(uint8_t x, uint8_t y, uint8_t c)
+{
+    for (int i = 0; i < sizeof(police_standard) / sizeof(Caractere); i++)
+    {
+        if (police_standard[i].code == c)
+        {
+            draw_glyph(x, y, police_standard[i]);
+            return;
+        }
+    }
+    for (int i = 0; i < sizeof(police_accents) / sizeof(Caractere); i++)
+    {
+        if (police_accents[i].code == c)
+        {
+            draw_glyph(x, y, police_accents[i]);
+            return;
+        }
+    }
+}
+```
+
+## Écrire une chaîne de caractères
+```cpp
+// Affiche une chaîne de caractères à la position (x, y)
+// str : pointeur sur le premier caractère de la chaîne (se termine par \0)
+// Chaque caractère fait 8 pixels de large
+void draw_string(uint8_t x, uint8_t y, const char *str)
+{
+    while (*str)
+    {                          // tant qu'on n'est pas à la fin de la chaîne (\0)
+        draw_char(x, y, *str); // on dessine le caractère courant
+        x += 8;                // on avance de 8 pixels
+        str++;                 // on passe au caractère suivant
+    }
+}
+```
+
+## Dessiner un cercle qui s'agrandit
+```cpp
+void setup()
+{
+    int a =5;
+    Serial.begin(115200);
+    Wire.begin(SDA_PIN, SCL_PIN);
+    Wire.setClock(400000);
+    sh1106_init();
+    clear();
+    display();
+
+    for (int i = 10; i < 70; i++)
+    {
+        draw_circle(63, 31, i);
+        display();
+        delay(a);
+        clear();
+    }
+    for (int i = 10; i < 75; i++)
+    {
+        draw_circle(63, 31, i);
+        display();
+        delay(a);
+        clear();
+    }
+}
+```
+
+## Faire défiler une phrase qui vient d'un fichier
+Il faut ajouter au début de main.cpp
+```cpp
+#include "bateauIvre.h" / ou <nom_du_fichier>.h
+```
+```cpp
+void loop()
+{
+    int longueur = strlen(phrase) * 8;
+    static int i = 0;
+    
+    clear();
+    draw_string(WIDTH - i, 28, phrase);
+    if (i > longueur - WIDTH)
+        draw_string(WIDTH - i + longueur, 28, phrase);
+    display();
+    delay(1);
+    i++;
+    if (i >= longueur) i = 0;
 }
 ```

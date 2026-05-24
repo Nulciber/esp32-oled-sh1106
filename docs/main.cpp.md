@@ -206,8 +206,30 @@ void draw_circle(uint8_t cx, uint8_t cy, uint8_t r) {
     }
 }
 ```
+## Fonction draw_char
+```cpp
+void draw_char(int x, int y, uint8_t c)
+{
+    for (int i = 0; i < sizeof(police_standard) / sizeof(Caractere); i++)
+    {
+        if (police_standard[i].code == c)
+        {
+            draw_glyph(x, y, police_standard[i]);
+            return;
+        }
+    }
+    for (int i = 0; i < sizeof(police_accents) / sizeof(Caractere); i++)
+    {
+        if (police_accents[i].code == c)
+        {
+            draw_glyph(x, y, police_accents[i]);
+            return;
+        }
+    }
+}
+```
 
-## Fonction
+## Fonction drwa_glyph()
 ```cpp
 // Cette fonction reçoit les coordonnées de l'écran pour écrire le glyphe 
 // ainsi que le glyphe (car) à écrire qui est de type Caractere, type défini dans caractere.h
@@ -216,7 +238,7 @@ void draw_circle(uint8_t cx, uint8_t cy, uint8_t r) {
 // Exemple :  {0x41, {0x18, 0x24, 0x42, 0x42, 0x7E, 0x42, 0x42, 0x00}}, // A
 // La fonction draw_glyphe est appelée par draw_char, elle n'est pas utilisée pour elle-même
 // dans main.cpp
-void draw_glyph(uint8_t x, uint8_t y, Caractere car)
+void draw_glyph(int x, int y, Caractere car)
 {
     for (int ligne = 0; ligne < 8; ligne++) // Première boucle, on lit chaque ligne du glyphe
     {
@@ -228,6 +250,19 @@ void draw_glyph(uint8_t x, uint8_t y, Caractere car)
                 set_pixel(x + col, y + ligne, 1);
             }
         }
+    }
+}
+```
+
+## Fonction draw_string
+```cpp
+void draw_string(int x, int y, const char *str)
+{
+    while (*str)
+    {                          // tant qu'on n'est pas à la fin de la chaîne (\0)
+        draw_char(x, y, *str); // on dessine le caractère courant
+        x += 8;                // on avance de 8 pixels
+        str++;                 // on passe au caractère suivant
     }
 }
 ```
