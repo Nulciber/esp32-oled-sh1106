@@ -229,7 +229,7 @@ void draw_char(int x, int y, uint8_t c)
 }
 ```
 
-## Fonction drwa_glyph()
+## Fonction draw_glyph()
 ```cpp
 // Cette fonction reçoit les coordonnées de l'écran pour écrire le glyphe 
 // ainsi que le glyphe (car) à écrire qui est de type Caractere, type défini dans caractere.h
@@ -267,6 +267,9 @@ void draw_string(int x, int y, const char *str)
 }
 ```
 
+
+
+
 ## Fonction setup()
 ```cpp
 void setup() {
@@ -286,3 +289,24 @@ void setup() {
 void loop() {} // Rien — tout est fait dans setup()
 ```
 
+## Faire défiler une phrase à partir d'un fichier
+Le fichier doit être défini comme include au début de main.cpp
+```cpp
+#include "bateauIvre.h"
+```
+```cpp
+void loop()
+{
+    int longueur = strlen(phrase) * 8;
+    static int i = 0;
+    
+    clear();
+    draw_string(WIDTH - i, 28, phrase);
+    if (i > longueur - WIDTH)
+        draw_string(WIDTH - i + longueur, 28, phrase);
+    display();
+    delay(1);
+    i++;
+    if (i >= longueur) i = 0;
+}
+```
