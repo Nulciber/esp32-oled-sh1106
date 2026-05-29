@@ -4,6 +4,7 @@
 #include "police_standard.h"
 #include "police_accents.h"
 #include "eneide.h"
+#include "aveMaria.h"
 
 #define I2C_ADDR 0x3D
 #define SDA_PIN 8
@@ -11,6 +12,8 @@
 #define WIDTH 128
 #define HEIGHT 64
 #define PAGES 8
+#define TEXTEQUIDEFILE aveMaria // Entrer après TEXTEQUIDEFILE le nom de la  variable qui contient le texte qui doit défiler à l'écran
+// En bonne logique, la variable doit avoir le même nom que le fichier .h. Ce n'est pas obligatoire mais fortement recommandé
 
 uint8_t framebuffer[PAGES][WIDTH];
 
@@ -229,13 +232,13 @@ void setup()
 
 void loop()
 {
-    int longueur = strlen(phrase) * 8;
+    int longueur = strlen(TEXTEQUIDEFILE) * 8;
     static int i = 0;
     
     clear();
-    draw_string(WIDTH - i, 28, phrase);
+    draw_string(WIDTH - i, 28, TEXTEQUIDEFILE);
     if (i > longueur - WIDTH)
-        draw_string(WIDTH - i + longueur, 28, phrase);
+        draw_string(WIDTH - i + longueur, 28, TEXTEQUIDEFILE);
     display();
     delay(1);
     i++;
