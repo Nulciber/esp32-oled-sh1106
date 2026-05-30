@@ -17,6 +17,10 @@ void setup()
     sh1106_init();
     clear();
     display();
+     draw_char(10, 10, 0x61);    // a — dans police_standard.h
+    draw_char(20, 10, 0x3B1);   // α — dans police_accents.h
+    draw_char(30, 10, 0xE000);  // glyphe — dans police_accents.h
+    display();
 }
 
 void loop()
