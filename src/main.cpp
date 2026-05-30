@@ -1,13 +1,13 @@
 #include <Arduino.h>
 #include <Wire.h>
 #include "sh1106.h"
-#include "eneide.h"
-#include "aveMaria.h"
+#include "txt_eneide.h"
+#include "txt_aveMaria.h"
 
 
 #define SDA_PIN 8
 #define SCL_PIN 9
-#define TEXTEQUIDEFILE aveMaria
+#define TEXTEQUIDEFILE txt_aveMaria
 
 void setup()
 {

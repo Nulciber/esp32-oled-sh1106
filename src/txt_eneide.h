@@ -1,7 +1,7 @@
-#ifndef ENEIDE_H
-#define ENEIDE_H
+#ifndef TXT_ENEIDE_H
+#define TXT_ENEIDE_H
 
-const char *eneide =
+const char *txt_eneide =
 
     "Je chante les combats et l'homme qui d'abord "
     "Chassé par le destin des rivages de Troie "
