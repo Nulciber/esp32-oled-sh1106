@@ -2,7 +2,7 @@
 #include "sh1106.h"
 #include <Wire.h>
 #include "police_standard.h"
-#include "police_accents.h"
+#include "police_homemade.h"
 
 #define I2C_ADDR 0x3D
 #define WIDTH 128
@@ -190,11 +190,11 @@ void draw_char(int x, int y, uint16_t c)
             return;
         }
     }
-    for (int i = 0; i < sizeof(police_accents) / sizeof(Caractere); i++)
+    for (int i = 0; i < sizeof(police_homemade) / sizeof(Caractere); i++)
     {
-        if (police_accents[i].code == c)
+        if (police_homemade[i].code == c)
         {
-            draw_glyph(x, y, police_accents[i]);
+            draw_glyph(x, y, police_homemade[i]);
             return;
         }
     }

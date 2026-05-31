@@ -16,23 +16,13 @@ void setup()
     sh1106_init();
     clear();
     display();
-    draw_string(0, 10, "éèëêēàäâāïîöôùü");
-    draw_string(0, 20, "Éœç");
+    draw_char(0, 10, 0x03B1);  // α
+    draw_char(10, 10, 0x03B2); // β
+    draw_char(20, 10, 0x03C9); // Ω
+    display();
     display();
 }
 
 void loop()
 {
-    int longueur = strlen(TEXTEQUIDEFILE) * 8;
-    static int i = 0;
-
-    clear();
-    draw_string(WIDTH - i, 28, TEXTEQUIDEFILE);
-    if (i > longueur - WIDTH)
-        draw_string(WIDTH - i + longueur, 28, TEXTEQUIDEFILE);
-    display();
-    delay(1);
-    i++;
-    if (i >= longueur)
-        i = 0;
 }
