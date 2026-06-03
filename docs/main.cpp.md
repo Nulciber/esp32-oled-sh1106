@@ -1,4 +1,4 @@
-## Bibliothèques
+## Bibliothèques texte pour test synchro gitHUb
 ```cpp
 #include <Arduino.h> // On appelle la bibliothèque Arduino
 #include <Wire.h>    // On appelle la bibliothèque qui inclut les programmes de communication avec le hardware I2C
