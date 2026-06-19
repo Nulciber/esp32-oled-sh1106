@@ -16,7 +16,6 @@ void setup()
     buzzer_init();
     clear();
     display();
-    
 }
 void loop()
 {
@@ -27,9 +26,28 @@ void loop()
     draw_line(40, 48, 63, 33);
     draw_line(87, 48, 63, 33);
     display();
-    buzzer_bip(1200);
-    delay(500);
-    clear();
-    display();
-    delay(500);
+    // buzzer_bip(1200);
+    // delay(500);
+    // clear();
+    // display();
+    // delay(500);
+    buzzer_note(A3, CROCHE);
+    buzzer_note(A3, CROCHE);
+    buzzer_note(A3, CROCHE);
+    buzzer_note(F3, NOIRE);
+    buzzer_note(F3, CROCHE);
+    buzzer_note(E3, NOIRE_POINTEE);
+    buzzer_note(E3, CROCHE);
+    buzzer_note(D3, CROCHE);
+    buzzer_note(E3, CROCHE);
+    buzzer_note(F3, NOIRE_POINTEE);
+    buzzer_note(F3, NOIRE_POINTEE);
+    
+    buzzer_note(E3, CROCHE);
+    buzzer_note(F3, CROCHE);
+    buzzer_note(G3, CROCHE);
+    buzzer_note(G3, CROCHE);
+    buzzer_note(F3, CROCHE);
+    buzzer_note(G3, CROCHE);
+    buzzer_note(A3, BLANCHE_POINTEE);
 }
