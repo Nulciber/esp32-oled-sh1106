@@ -251,3 +251,53 @@ void loop()
     if (i >= longueur) i = 0;
 }
 ```
+
+## Affichage de l'alphabet grec ancien
+```cpp
+void setup()
+{
+    Serial.begin(115200);
+    Wire.begin(SDA_PIN, SCL_PIN);
+    Wire.setClock(400000);
+    sh1106_init();
+    clear();
+    display();
+    // draw_char(0, 10, 0x03B1);  // α
+    // draw_char(10, 10, 0x03B2); // β
+    // draw_char(20, 10, 0x03C9); // Ω
+    // display();
+    // clear();
+    draw_string(0, 0, "ΑΒΓΔΕΖΗΘ"); 
+    draw_string(0, 10, "ΙΚΛΜΝΞΟΠ");
+    draw_string(0, 20, "ΡΣΤΥΦΧΨΩ");
+    draw_string(0, 30, "αβγδεζηθ");
+    draw_string(0, 40, "ικλμνξοπ");
+    draw_string(0, 50, "ρστυφχψω");
+    display();
+}
+
+void loop()
+{
+}
+```
+## Make Love Not War
+```cpp
+void setup()
+{
+    Serial.begin(115200);
+    Wire.begin(SDA_PIN, SCL_PIN);
+    Wire.setClock(400000);
+    sh1106_init();
+    clear();
+    display();
+    draw_circle(63, 31, 30);
+    draw_line(63, 2, 63, 60);
+    draw_line(40, 48, 63, 31);
+    draw_line(87, 48, 63, 31);
+    display();
+}
+
+void loop()
+{
+}
+```

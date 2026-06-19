@@ -16,13 +16,19 @@ void setup()
     sh1106_init();
     clear();
     display();
-    draw_char(0, 10, 0x03B1);  // α
-    draw_char(10, 10, 0x03B2); // β
-    draw_char(20, 10, 0x03C9); // Ω
-    display();
-    display();
+    
 }
-
 void loop()
 {
+    clear();
+    display();
+    draw_circle(63, 31, 30);
+    draw_line(63, 2, 63, 60);
+    draw_line(40, 48, 63, 33);
+    draw_line(87, 48, 63, 33);
+    display();
+    delay(500);
+    clear();
+    display();
+    delay(250);
 }
